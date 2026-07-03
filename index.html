@@ -886,7 +886,13 @@
   /* =========================================================
      8. FRICTION ANTI-COPIE (dissuasion, pas une vraie sécurité)
   ========================================================= */
-  document.addEventListener("contextmenu", function(e){ e.preventDefault(); });
+  document.addEventListener("contextmenu", function(e){
+    var tag = e.target.tagName;
+    // Toujours autoriser le clic-droit/collage sur les champs de saisie
+    // (indispensable pour coller la clé de licence, un numéro, etc.)
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+    e.preventDefault();
+  });
   document.addEventListener("keydown", function(e){
     var k = e.key ? e.key.toLowerCase() : "";
     if (k === "f12") e.preventDefault();
