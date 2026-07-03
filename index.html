@@ -1,0 +1,914 @@
+<!--
+  DONKO Inventory — fichier unique, autonome, sans serveur ni base de données.
+
+  Déploiement GitHub Pages : dépose ce seul fichier (renommé index.html) à la
+  racine d'un dépôt, puis Settings > Pages > Source = branche main. C'est tout.
+
+  Sécurité : seule la clé PUBLIQUE FedaPay figure ci-dessous (fait pour être
+  visible). La clé secrète (sk_live_...) ne doit JAMAIS être ajoutée ici ni
+  dans aucun fichier public — elle n'est d'ailleurs pas nécessaire à cette
+  architecture 100% cliente. Voir la section CONFIGURATION dans le <script>.
+-->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>DONKO Inventory — Gestion de stock 100% hors-ligne</title>
+<meta name="description" content="DONKO Inventory : gérez le stock de votre boutique ou de votre maison, sans internet, sans compte, sans serveur. Vos données restent sur votre appareil.">
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgNjQgNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsPSJMb2dvIERPTktPIEludmVudG9yeSI+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMzEiIGZpbGw9IiMxQjJBNEEiLz4KICA8cmVjdCB4PSIxNCIgeT0iMjYiIHdpZHRoPSIyMiIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0U4QTkzQSIgc3Ryb2tlLXdpZHRoPSIzIiB0cmFuc2Zvcm09InJvdGF0ZSgtOCAyNSAzNikiLz4KICA8cmVjdCB4PSIyOCIgeT0iMTYiIHdpZHRoPSIyNCIgaGVpZ2h0PSIyMiIgcng9IjMiIGZpbGw9IiNDMTU5MUEiIHRyYW5zZm9ybT0icm90YXRlKDYgNDAgMjcpIi8+CiAgPGxpbmUgeDE9IjMwIiB5MT0iMjEiIHgyPSI1MCIgeTI9IjIxIiBzdHJva2U9IiNGQkY2RUMiIHN0cm9rZS13aWR0aD0iMS42IiBvcGFjaXR5PSIwLjY1IiB0cmFuc2Zvcm09InJvdGF0ZSg2IDQwIDI3KSIvPgogIDxsaW5lIHgxPSIzMCIgeTE9IjI3IiB4Mj0iNTAiIHkyPSIyNyIgc3Ryb2tlPSIjRkJGNkVDIiBzdHJva2Utd2lkdGg9IjEuNiIgb3BhY2l0eT0iMC42NSIgdHJhbnNmb3JtPSJyb3RhdGUoNiA0MCAyNykiLz4KICA8bGluZSB4MT0iMzAiIHkxPSIzMyIgeDI9IjUwIiB5Mj0iMzMiIHN0cm9rZT0iI0ZCRjZFQyIgc3Ryb2tlLXdpZHRoPSIxLjYiIG9wYWNpdHk9IjAuNjUiIHRyYW5zZm9ybT0icm90YXRlKDYgNDAgMjcpIi8+Cjwvc3ZnPgo=" type="image/svg+xml">
+<link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkRPTktPIEludmVudG9yeSIsCiAgInNob3J0X25hbWUiOiAiRE9OS08iLAogICJkZXNjcmlwdGlvbiI6ICJHZXN0aW9uIGRlIHN0b2NrIDEwMCUgaG9ycy1saWduZSwgcG91ciBib3V0aXF1ZSBvdSBtYWlzb24g4oCUIHNhbnMgc2VydmV1ciwgc2FucyBjb25uZXhpb24sIHNhbnMgYmFzZSBkZSBkb25uw6llcy4iLAogICJzdGFydF91cmwiOiAiLi9pbmRleC5odG1sIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjRkJGNkVDIiwKICAidGhlbWVfY29sb3IiOiAiIzFCMkE0QSIsCiAgIm9yaWVudGF0aW9uIjogInBvcnRyYWl0LXByaW1hcnkiLAogICJpY29ucyI6IFtdCn0K">
+<meta name="theme-color" content="#1B2A4A">
+<style>
+  :root{
+    --indigo:#1B2A4A;
+    --indigo-2:#233a63;
+    --clay:#C1591A;
+    --clay-dark:#a34715;
+    --gold:#E8A93A;
+    --cream:#FBF6EC;
+    --millet:#3F6B4A;
+    --ink:#24211D;
+    --danger:#B23A2E;
+    --line:#e7ddc9;
+    --radius:14px;
+    --shadow:0 6px 20px rgba(27,42,74,0.12);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--cream);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.45;
+    padding-bottom:60px;
+  }
+  h1,h2,h3{
+    font-family:Georgia,"Iowan Old Style","Palatino Linotype",serif;
+    margin:0 0 6px 0;
+    color:var(--indigo);
+  }
+  a{color:var(--clay-dark);}
+  button{font-family:inherit;cursor:pointer;}
+  .motif{
+    height:10px;
+    background-image:
+      linear-gradient(45deg, var(--gold) 25%, transparent 25%),
+      linear-gradient(-45deg, var(--gold) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, var(--clay) 75%),
+      linear-gradient(-45deg, transparent 75%, var(--clay) 75%);
+    background-size:14px 14px;
+    background-position:0 0, 0 7px, 7px -7px, -7px 0px;
+  }
+  .wrap{max-width:960px;margin:0 auto;padding:0 16px;}
+
+  /* Header */
+  header.donko-header{background:var(--indigo);color:var(--cream);padding:14px 0;}
+  .header-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand svg{width:38px;height:38px;flex:none;}
+  .brand-text h1{color:var(--cream);font-size:1.25rem;}
+  .brand-text p{margin:0;font-size:.78rem;color:#d9d3c2;}
+  .sub-badge{font-size:.75rem;padding:5px 10px;border-radius:20px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);}
+  .sub-badge.active{background:rgba(63,107,74,.35);border-color:var(--millet);}
+  .sub-badge.expiring{background:rgba(232,169,58,.28);border-color:var(--gold);}
+  .sub-badge.expired{background:rgba(178,58,46,.35);border-color:var(--danger);}
+
+  /* Banners */
+  .banner{padding:10px 16px;font-size:.9rem;text-align:center;}
+  .banner-free{background:#fff;border-bottom:1px solid var(--line);}
+  .banner-expiring{background:#fff6e4;border-bottom:1px solid var(--gold);color:#7a5716;}
+  .banner a.link-btn, .banner button.link-btn{background:none;border:none;color:var(--clay-dark);font-weight:700;text-decoration:underline;padding:0;font-size:inherit;}
+
+  /* Buttons */
+  .btn{border:none;border-radius:10px;padding:11px 18px;font-size:.95rem;font-weight:600;display:inline-flex;align-items:center;gap:8px;justify-content:center;}
+  .btn-primary{background:var(--clay);color:#fff;}
+  .btn-primary:hover{background:var(--clay-dark);}
+  .btn-ghost{background:transparent;border:1.5px solid var(--indigo);color:var(--indigo);}
+  .btn-outline-light{background:transparent;border:1.5px solid rgba(255,255,255,.5);color:#fff;}
+  .btn-block{width:100%;}
+  .btn-sm{padding:7px 12px;font-size:.82rem;border-radius:8px;}
+  .btn-danger{background:var(--danger);color:#fff;}
+  @keyframes donko-pulse{
+    0%{box-shadow:0 0 0 0 rgba(193,89,26,.55);}
+    70%{box-shadow:0 0 0 16px rgba(193,89,26,0);}
+    100%{box-shadow:0 0 0 0 rgba(193,89,26,0);}
+  }
+  .btn-pulse{animation:donko-pulse 1.9s infinite;}
+  @media (prefers-reduced-motion: reduce){.btn-pulse{animation:none;}}
+
+  /* Toolbar */
+  .toolbar{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 10px;align-items:center;}
+  .toolbar input[type=search], .toolbar select{
+    padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:.92rem;flex:1 1 140px;
+  }
+  .stats-bar{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 16px;}
+  .stat-chip{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 14px;font-size:.82rem;color:#5c5645;}
+  .stat-chip b{color:var(--indigo);font-size:1rem;display:block;}
+
+  /* Items grid */
+  .items-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px;}
+  .item-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;}
+  .item-photo{width:100%;aspect-ratio:4/3;object-fit:cover;background:#efe9d8;}
+  .item-photo.placeholder{display:flex;align-items:center;justify-content:center;color:#b7ad91;font-size:1.6rem;}
+  .item-body{padding:10px 12px;display:flex;flex-direction:column;gap:4px;flex:1;}
+  .item-name{font-weight:700;color:var(--indigo);font-size:.95rem;}
+  .item-meta{font-size:.78rem;color:#79735f;}
+  .item-qty{font-size:.85rem;}
+  .tag-low{display:inline-block;background:#fdeceb;color:var(--danger);border:1px solid var(--danger);font-size:.68rem;font-weight:700;padding:2px 6px;border-radius:6px;margin-top:2px;width:fit-content;}
+  .item-actions{display:flex;gap:6px;padding:0 12px 10px;}
+  .empty-state{text-align:center;padding:50px 20px;color:#8a836c;}
+
+  /* Modal */
+  .modal-overlay{position:fixed;inset:0;background:rgba(27,42,74,.55);display:none;align-items:flex-start;justify-content:center;padding:24px 14px;overflow-y:auto;z-index:50;}
+  .modal-overlay.is-open{display:flex;}
+  .modal-panel{background:#fff;border-radius:var(--radius);max-width:480px;width:100%;padding:20px;box-shadow:var(--shadow);}
+  .modal-panel h2{font-size:1.15rem;}
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-size:.82rem;font-weight:600;color:#5c5645;margin-bottom:4px;}
+  .field input, .field select, .field textarea{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;font-size:.92rem;font-family:inherit;}
+  .field-row{display:flex;gap:10px;}
+  .field-row .field{flex:1;}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;}
+  #f-photo-preview{width:90px;height:70px;object-fit:cover;border-radius:8px;border:1px solid var(--line);margin-top:6px;display:none;}
+
+  /* Pricing */
+  .pricing-section{margin-top:34px;padding-top:22px;border-top:2px dashed var(--line);}
+  .plans-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:14px;}
+  .plan-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:16px;text-align:center;box-shadow:var(--shadow);}
+  .plan-card .price{font-size:1.5rem;font-weight:800;color:var(--clay-dark);margin:6px 0 2px;}
+  .plan-card .days{font-size:.8rem;color:#79735f;margin-bottom:12px;}
+  .customer-box{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-top:16px;}
+  .license-box{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-top:16px;}
+  .license-box .field-row{align-items:flex-end;}
+
+  /* Expired overlay */
+  #expired-overlay{position:fixed;inset:0;background:rgba(27,42,74,.72);display:none;align-items:center;justify-content:center;padding:16px;z-index:80;}
+  #expired-overlay.is-open{display:flex;}
+  .expired-panel{background:#fff;border-radius:var(--radius);max-width:400px;width:100%;padding:26px 22px;text-align:center;}
+  .expired-panel h2{color:var(--danger);}
+  #floating-resub{position:fixed;bottom:18px;right:18px;z-index:70;display:none;}
+  #floating-resub.is-open{display:block;}
+
+  /* Footer */
+  footer{margin-top:40px;background:var(--indigo);color:#e7e1cf;padding:26px 0 20px;}
+  footer .wrap{display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;}
+  footer h3{color:#fff;font-size:1rem;}
+  footer a{color:var(--gold);text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+  .footer-col{flex:1 1 220px;}
+  .fine-print{margin-top:18px;font-size:.72rem;color:#9aa1b8;text-align:center;}
+
+  @media (max-width:520px){
+    .field-row{flex-direction:column;}
+    footer .wrap{flex-direction:column;}
+  }
+</style>
+</head>
+<body>
+
+<header class="donko-header">
+  <div class="wrap header-row">
+    <div class="brand">
+      <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="32" cy="32" r="31" fill="#1B2A4A"/>
+        <rect x="14" y="26" width="22" height="20" rx="3" fill="none" stroke="#E8A93A" stroke-width="3" transform="rotate(-8 25 36)"/>
+        <rect x="28" y="16" width="24" height="22" rx="3" fill="#C1591A" transform="rotate(6 40 27)"/>
+        <line x1="30" y1="21" x2="50" y2="21" stroke="#FBF6EC" stroke-width="1.6" opacity="0.65" transform="rotate(6 40 27)"/>
+        <line x1="30" y1="27" x2="50" y2="27" stroke="#FBF6EC" stroke-width="1.6" opacity="0.65" transform="rotate(6 40 27)"/>
+        <line x1="30" y1="33" x2="50" y2="33" stroke="#FBF6EC" stroke-width="1.6" opacity="0.65" transform="rotate(6 40 27)"/>
+      </svg>
+      <div class="brand-text">
+        <h1>DONKO Inventory</h1>
+        <p>Votre stock, boutique ou maison — sans internet</p>
+      </div>
+    </div>
+    <div id="sub-badge" class="sub-badge">Version gratuite</div>
+  </div>
+</header>
+<div class="motif"></div>
+
+<div id="sub-banner"></div>
+
+<main class="wrap">
+
+  <div class="toolbar">
+    <input type="search" id="search-input" placeholder="Rechercher un article…">
+    <select id="category-filter"><option value="">Toutes les catégories</option></select>
+    <button class="btn btn-primary" id="btn-add-item">+ Ajouter un article</button>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-chip"><b id="stat-count">0</b>Articles</div>
+    <div class="stat-chip"><b id="stat-lowstock">0</b>Stock bas</div>
+    <div class="stat-chip"><b id="stat-value">0</b>Valeur totale (FCFA)</div>
+  </div>
+
+  <div id="items-grid" class="items-grid"></div>
+  <div id="empty-state" class="empty-state" style="display:none;">
+    <p>Aucun article pour l'instant.<br>Ajoutez votre premier article pour commencer.</p>
+  </div>
+
+  <div style="margin-top:22px;display:flex;gap:10px;flex-wrap:wrap;">
+    <button class="btn btn-ghost btn-sm" id="btn-export">⬇ Exporter mes données</button>
+    <label class="btn btn-ghost btn-sm" style="margin:0;">
+      ⬆ Importer une sauvegarde
+      <input type="file" id="import-input" accept="application/json" style="display:none;">
+    </label>
+  </div>
+
+  <!-- PRICING -->
+  <section class="pricing-section" id="pricing-section">
+    <h2>Passer en illimité</h2>
+    <p style="color:#5c5645;">La version gratuite est limitée à <b id="free-limit-label">20</b> articles. Débloquez le nombre illimité d'articles, l'export et les alertes avancées.</p>
+
+    <div class="customer-box">
+      <h3 style="margin-bottom:10px;">Vos informations</h3>
+      <div class="field-row">
+        <div class="field"><label>Prénom</label><input type="text" id="c-firstname" placeholder="Prénom"></div>
+        <div class="field"><label>Nom</label><input type="text" id="c-lastname" placeholder="Nom"></div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Pays</label>
+          <select id="c-country">
+            <option value="BJ">Bénin (+229)</option>
+            <option value="TG">Togo (+228)</option>
+            <option value="CI">Côte d'Ivoire (+225)</option>
+            <option value="SN">Sénégal (+221)</option>
+            <option value="ML">Mali (+223)</option>
+            <option value="NE">Niger (+227)</option>
+            <option value="BF">Burkina Faso (+226)</option>
+          </select>
+        </div>
+        <div class="field"><label>Téléphone (Mobile Money)</label><input type="tel" id="c-phone" placeholder="Ex: 96809106"></div>
+      </div>
+      <div class="field"><label>Email</label><input type="email" id="c-email" placeholder="vous@email.com"></div>
+      <p style="font-size:.76rem;color:#918a72;">Ces informations servent uniquement à FedaPay pour traiter votre paiement.</p>
+    </div>
+
+    <div class="plans-grid">
+      <div class="plan-card">
+        <div class="days">Hebdomadaire</div>
+        <div class="price">1500<span style="font-size:.7rem;"> FCFA</span></div>
+        <div class="days">7 jours</div>
+        <button class="btn btn-primary btn-block btn-sm plan-btn" data-plan="7" data-amount="1500">S'abonner</button>
+      </div>
+      <div class="plan-card">
+        <div class="days">Mensuel</div>
+        <div class="price">2500<span style="font-size:.7rem;"> FCFA</span></div>
+        <div class="days">30 jours</div>
+        <button class="btn btn-primary btn-block btn-sm plan-btn" data-plan="30" data-amount="2500">S'abonner</button>
+      </div>
+      <div class="plan-card">
+        <div class="days">Bimestriel</div>
+        <div class="price">3500<span style="font-size:.7rem;"> FCFA</span></div>
+        <div class="days">60 jours</div>
+        <button class="btn btn-primary btn-block btn-sm plan-btn" data-plan="60" data-amount="3500">S'abonner</button>
+      </div>
+      <div class="plan-card">
+        <div class="days">Trimestriel</div>
+        <div class="price">5500<span style="font-size:.7rem;"> FCFA</span></div>
+        <div class="days">90 jours</div>
+        <button class="btn btn-primary btn-block btn-sm plan-btn" data-plan="90" data-amount="5500">S'abonner</button>
+      </div>
+    </div>
+
+    <p id="payment-msg" style="font-size:.85rem;margin-top:10px;text-align:center;"></p>
+
+    <div class="license-box">
+      <h3>Vous avez déjà une clé de licence ?</h3>
+      <div class="field-row">
+        <div class="field" style="flex:2;">
+          <label>Coller votre clé (ex: DONKO-W-XXXXX-XXXXXXXX)</label>
+          <input type="text" id="license-input" placeholder="DONKO-...">
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="btn-activate-license">Activer ma clé</button>
+      <p id="license-msg" style="font-size:.82rem;margin-top:8px;"></p>
+    </div>
+  </section>
+
+</main>
+
+<!-- MODAL ADD/EDIT ITEM -->
+<div class="modal-overlay" id="item-modal">
+  <div class="modal-panel">
+    <h2 id="modal-title">Ajouter un article</h2>
+    <form id="item-form">
+      <input type="hidden" id="f-id">
+      <div class="field"><label>Nom de l'article *</label><input type="text" id="f-name" required></div>
+      <div class="field">
+        <label>Catégorie</label>
+        <input type="text" id="f-category" list="category-list" placeholder="Ex: Boutique, Maison, Alimentation…">
+        <datalist id="category-list"></datalist>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Quantité *</label><input type="number" id="f-qty" min="0" step="0.01" required></div>
+        <div class="field"><label>Unité</label><input type="text" id="f-unit" placeholder="pièce, sac, kg…"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Prix unitaire (FCFA)</label><input type="number" id="f-price" min="0"></div>
+        <div class="field"><label>Alerte stock bas à</label><input type="number" id="f-lowstock" min="0" value="5"></div>
+      </div>
+      <div class="field">
+        <label>Photo (optionnel)</label>
+        <input type="file" id="f-photo" accept="image/*" capture="environment">
+        <img id="f-photo-preview" alt="Aperçu">
+      </div>
+      <div class="field"><label>Notes</label><textarea id="f-notes" rows="2"></textarea></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost btn-sm" id="modal-cancel">Annuler</button>
+        <button type="submit" class="btn btn-primary btn-sm" id="modal-save">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- EXPIRED OVERLAY -->
+<div id="expired-overlay">
+  <div class="expired-panel">
+    <h2>Abonnement expiré</h2>
+    <p>Votre formule illimitée est arrivée à échéance. Réabonnez-vous pour continuer à ajouter des articles au-delà de <span id="free-limit-label-2">20</span>.</p>
+    <button class="btn btn-primary btn-pulse btn-block" id="btn-resub-overlay" style="margin:14px 0 8px;">Se réabonner maintenant</button>
+    <button class="btn btn-ghost btn-sm btn-block" id="btn-later">Plus tard</button>
+  </div>
+</div>
+<div id="floating-resub">
+  <button class="btn btn-primary btn-pulse btn-sm" id="btn-resub-floating">⚠ Abonnement expiré — Renouveler</button>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-col">
+      <h3>EMPIRE DONKO</h3>
+      <p style="font-size:.85rem;">Outils numériques 100% hors-ligne — sans serveur, sans connexion, sans base de données. Conçus pour le Bénin, le Togo, la Côte d'Ivoire, le Sénégal, le Mali, le Niger et le Burkina Faso.</p>
+    </div>
+    <div class="footer-col">
+      <h3>Partenariat & outils sur mesure</h3>
+      <p style="font-size:.85rem;">
+        WhatsApp : <a href="https://wa.me/2290196809106" target="_blank" rel="noopener">+229 01 96 80 91 06</a><br>
+        Email : <a href="mailto:empiredonko@gmail.com">empiredonko@gmail.com</a>
+      </p>
+    </div>
+  </div>
+  <p class="fine-print">Powered by EMPIRE DONKO · Vos données restent sur votre appareil, jamais sur un serveur.</p>
+</footer>
+
+<script src="https://cdn.fedapay.com/checkout.js?v=1.1.7"></script>
+<script>
+(function(){
+  "use strict";
+
+  /* Filet de sécurité : si une erreur inattendue survient n'importe où dans
+     l'app, on l'affiche visiblement en haut de page au lieu de la laisser
+     silencieuse (utile pour diagnostiquer sans outils développeur). */
+  function showFatalError(msg){
+    var bar = document.createElement("div");
+    bar.style.cssText = "position:fixed;top:0;left:0;right:0;background:#B23A2E;color:#fff;padding:10px 14px;font-size:.82rem;z-index:999;text-align:center;";
+    bar.textContent = "Erreur technique : " + msg + " — contactez le support via WhatsApp en bas de page.";
+    document.body.appendChild(bar);
+  }
+  window.addEventListener("error", function(e){ showFatalError(e.message || "erreur inconnue"); });
+  window.addEventListener("unhandledrejection", function(e){ showFatalError((e.reason && e.reason.message) || "erreur asynchrone"); });
+
+  /* =========================================================
+     0. CONFIGURATION
+  ========================================================= */
+  // Clé PUBLIQUE FedaPay : sans danger à exposer côté client, c'est son rôle.
+  // Ne JAMAIS mettre la clé secrète (sk_live_...) ici ou dans un fichier public.
+  var FEDAPAY_PUBLIC_KEY = "pk_live_9iYiCnrfVLTqtOQ6-aDRynRV";
+  var FREE_ITEM_LIMIT = 20;
+  var PLAN_CODES = {7:"W", 30:"M", 60:"B", 90:"Q"};
+  var CODE_PLANS = {W:7, M:30, B:60, Q:90};
+  var REMINDER_DAYS = {7:3, 30:5, 60:7, 90:10};
+  var PLAN_LABELS = {7:"Hebdomadaire (7 jours)", 30:"Mensuel (30 jours)", 60:"Bimestriel (60 jours)", 90:"Trimestriel (90 jours)"};
+  // Secret local de signature des clés de licence.
+  // Avertissement honnête : ce fichier est 100% public (HTML/JS visible dans le
+  // navigateur de tout visiteur). Ce "secret" freine la fraude occasionnelle,
+  // il n'empêche pas un développeur déterminé de l'extraire. Une vraie
+  // protection nécessiterait une vérification côté serveur (voir README).
+  var SECRET = ["DONKO","INVENTORY","2026","xK9","EMPIRE"].join("-");
+
+  /* =========================================================
+     1. STOCKAGE LOCAL (aucune base de données, aucun serveur)
+  ========================================================= */
+  var LS = {items:"donko_items", sub:"donko_subscription", laterAt:"donko_later_at"};
+
+  function loadItems(){
+    try { return JSON.parse(localStorage.getItem(LS.items)) || []; }
+    catch(e){ return []; }
+  }
+  function saveItems(){ localStorage.setItem(LS.items, JSON.stringify(state.items)); }
+
+  function loadSub(){
+    try { return JSON.parse(localStorage.getItem(LS.sub)) || null; }
+    catch(e){ return null; }
+  }
+  function saveSub(){ localStorage.setItem(LS.sub, JSON.stringify(state.subscription)); }
+
+  var state = {
+    items: loadItems(),
+    subscription: loadSub() // {plan, activatedAt, expiresAt, licenseKey}
+  };
+
+  /* =========================================================
+     2. LICENCE — signature HMAC-SHA256 (Web Crypto, 100% hors-ligne)
+  ========================================================= */
+  function hmacHex(secret, message){
+    var enc = new TextEncoder();
+    return crypto.subtle.importKey("raw", enc.encode(secret), {name:"HMAC", hash:"SHA-256"}, false, ["sign"])
+      .then(function(key){ return crypto.subtle.sign("HMAC", key, enc.encode(message)); })
+      .then(function(sigBuf){
+        return Array.prototype.map.call(new Uint8Array(sigBuf), function(b){
+          return b.toString(16).padStart(2,"0");
+        }).join("");
+      });
+  }
+
+  function generateLicenseKey(planDays){
+    var code = PLAN_CODES[planDays];
+    var expiresAt = Date.now() + planDays*24*60*60*1000;
+    var expB36 = Math.floor(expiresAt/1000).toString(36).toUpperCase();
+    return hmacHex(SECRET, code+":"+expB36).then(function(sig){
+      var key = "DONKO-"+code+"-"+expB36+"-"+sig.slice(0,8).toUpperCase();
+      return {key:key, expiresAt:expiresAt, plan:planDays};
+    });
+  }
+
+  function validateLicenseKey(rawKey){
+    var key = (rawKey||"").trim().toUpperCase();
+    var parts = key.split("-");
+    if (parts.length !== 4 || parts[0] !== "DONKO") return Promise.resolve({valid:false, reason:"format"});
+    var code = parts[1], expB36 = parts[2], sig = parts[3];
+    var plan = CODE_PLANS[code];
+    if (!plan) return Promise.resolve({valid:false, reason:"format"});
+    return hmacHex(SECRET, code+":"+expB36).then(function(expected){
+      if (expected.slice(0,8).toUpperCase() !== sig) return {valid:false, reason:"signature"};
+      var expiresAt = parseInt(expB36, 36) * 1000;
+      if (!expiresAt || isNaN(expiresAt)) return {valid:false, reason:"format"};
+      if (Date.now() > expiresAt) return {valid:false, reason:"expired", plan:plan, expiresAt:expiresAt};
+      return {valid:true, plan:plan, expiresAt:expiresAt};
+    });
+  }
+
+  function activateSubscription(plan, expiresAt, key){
+    state.subscription = {plan:plan, activatedAt:Date.now(), expiresAt:expiresAt, licenseKey:key};
+    saveSub();
+    localStorage.removeItem(LS.laterAt);
+    renderSubscriptionUI();
+    renderAll();
+  }
+
+  function getSubStatus(){
+    var sub = state.subscription;
+    if (!sub || !sub.expiresAt) return {status:"free"};
+    var now = Date.now();
+    if (now > sub.expiresAt) return {status:"expired", sub:sub};
+    var daysLeft = Math.ceil((sub.expiresAt-now)/86400000);
+    var threshold = REMINDER_DAYS[sub.plan] || 3;
+    if (daysLeft <= threshold) return {status:"expiring", daysLeft:daysLeft, sub:sub};
+    return {status:"active", daysLeft:daysLeft, sub:sub};
+  }
+
+  function canAddMore(){
+    var st = getSubStatus().status;
+    if (st === "active" || st === "expiring") return true;
+    return state.items.length < FREE_ITEM_LIMIT;
+  }
+
+  /* =========================================================
+     3. UI — Bandeau / badge d'abonnement + réaffichage forcé
+  ========================================================= */
+  function renderSubscriptionUI(){
+    var st = getSubStatus();
+    var badge = document.getElementById("sub-badge");
+    var banner = document.getElementById("sub-banner");
+    var overlay = document.getElementById("expired-overlay");
+    var floating = document.getElementById("floating-resub");
+
+    badge.className = "sub-badge";
+    banner.innerHTML = "";
+    overlay.classList.remove("is-open");
+    floating.classList.remove("is-open");
+
+    if (st.status === "free"){
+      badge.textContent = "Version gratuite";
+      banner.innerHTML = '<div class="banner banner-free">Version gratuite : '+FREE_ITEM_LIMIT+' articles max. '
+        + '<button class="link-btn" onclick="document.getElementById(\'pricing-section\').scrollIntoView({behavior:\'smooth\'})">Passer en illimité dès 1500 FCFA</button></div>';
+    } else if (st.status === "active"){
+      badge.classList.add("active");
+      badge.textContent = "Premium actif · "+st.daysLeft+" j restants";
+    } else if (st.status === "expiring"){
+      badge.classList.add("expiring");
+      badge.textContent = "Expire dans "+st.daysLeft+" j";
+      banner.innerHTML = '<div class="banner banner-expiring">Votre abonnement se termine dans '+st.daysLeft+' jour(s). '
+        + '<button class="link-btn" onclick="document.getElementById(\'pricing-section\').scrollIntoView({behavior:\'smooth\'})">Renouveler maintenant</button></div>';
+    } else if (st.status === "expired"){
+      badge.classList.add("expired");
+      badge.textContent = "Abonnement expiré";
+      var laterAt = parseInt(localStorage.getItem(LS.laterAt)||"0",10);
+      var snoozeActive = laterAt && (Date.now() - laterAt < 5*60*1000); // 5 min de répit max
+      if (snoozeActive){
+        floating.classList.add("is-open");
+      } else {
+        overlay.classList.add("is-open");
+      }
+    }
+  }
+
+  document.getElementById("btn-later").addEventListener("click", function(){
+    localStorage.setItem(LS.laterAt, String(Date.now()));
+    renderSubscriptionUI();
+  });
+  document.getElementById("btn-resub-overlay").addEventListener("click", function(){
+    document.getElementById("expired-overlay").classList.remove("is-open");
+    document.getElementById("pricing-section").scrollIntoView({behavior:"smooth"});
+  });
+  document.getElementById("btn-resub-floating").addEventListener("click", function(){
+    document.getElementById("pricing-section").scrollIntoView({behavior:"smooth"});
+  });
+  // Revérifie régulièrement (ex: l'app reste ouverte au moment où l'abonnement expire)
+  setInterval(renderSubscriptionUI, 60*1000);
+
+  /* =========================================================
+     4. GESTION DES ARTICLES (CRUD 100% local)
+  ========================================================= */
+  function uid(){ return "it_"+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+
+  function getCategories(){
+    var set = {};
+    state.items.forEach(function(it){ if (it.category) set[it.category]=true; });
+    return Object.keys(set).sort();
+  }
+
+  function renderCategoryOptions(){
+    var cats = getCategories();
+    var filter = document.getElementById("category-filter");
+    var currentFilter = filter.value;
+    filter.innerHTML = '<option value="">Toutes les catégories</option>' +
+      cats.map(function(c){ return '<option value="'+escapeHtml(c)+'">'+escapeHtml(c)+'</option>'; }).join("");
+    filter.value = currentFilter;
+
+    var datalist = document.getElementById("category-list");
+    datalist.innerHTML = cats.map(function(c){ return '<option value="'+escapeHtml(c)+'">'; }).join("");
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+
+  function renderStats(){
+    var count = state.items.length;
+    var lowStock = state.items.filter(function(it){ return it.lowStock!=null && Number(it.qty) <= Number(it.lowStock); }).length;
+    var value = state.items.reduce(function(sum, it){
+      var p = Number(it.price)||0, q = Number(it.qty)||0;
+      return sum + p*q;
+    }, 0);
+    document.getElementById("stat-count").textContent = count;
+    document.getElementById("stat-lowstock").textContent = lowStock;
+    document.getElementById("stat-value").textContent = value.toLocaleString("fr-FR");
+  }
+
+  function renderItems(){
+    var grid = document.getElementById("items-grid");
+    var empty = document.getElementById("empty-state");
+    var search = document.getElementById("search-input").value.trim().toLowerCase();
+    var catFilter = document.getElementById("category-filter").value;
+
+    var filtered = state.items.filter(function(it){
+      var matchSearch = !search || (it.name||"").toLowerCase().indexOf(search) !== -1;
+      var matchCat = !catFilter || it.category === catFilter;
+      return matchSearch && matchCat;
+    });
+
+    if (filtered.length === 0){
+      grid.innerHTML = "";
+      empty.style.display = "block";
+    } else {
+      empty.style.display = "none";
+      grid.innerHTML = filtered.map(function(it){
+        var low = it.lowStock!=null && Number(it.qty) <= Number(it.lowStock);
+        var photoHtml = it.photo
+          ? '<img class="item-photo" src="'+it.photo+'" alt="'+escapeHtml(it.name)+'">'
+          : '<div class="item-photo placeholder">📦</div>';
+        return '<div class="item-card">' + photoHtml +
+          '<div class="item-body">' +
+            '<div class="item-name">'+escapeHtml(it.name)+'</div>' +
+            (it.category ? '<div class="item-meta">'+escapeHtml(it.category)+'</div>' : '') +
+            '<div class="item-qty">'+it.qty+' '+escapeHtml(it.unit||"")+(it.price ? ' · '+Number(it.price).toLocaleString("fr-FR")+' FCFA' : '')+'</div>' +
+            (low ? '<span class="tag-low">Stock bas</span>' : '') +
+          '</div>' +
+          '<div class="item-actions">' +
+            '<button class="btn btn-ghost btn-sm" data-edit="'+it.id+'">Modifier</button>' +
+            '<button class="btn btn-danger btn-sm" data-del="'+it.id+'">Suppr.</button>' +
+          '</div>' +
+        '</div>';
+      }).join("");
+    }
+    renderStats();
+  }
+
+  function renderAll(){
+    renderCategoryOptions();
+    renderItems();
+  }
+
+  // Recherche / filtre
+  document.getElementById("search-input").addEventListener("input", renderItems);
+  document.getElementById("category-filter").addEventListener("change", renderItems);
+
+  // Délégation clic sur la grille (modifier / supprimer)
+  document.getElementById("items-grid").addEventListener("click", function(e){
+    var editId = e.target.getAttribute("data-edit");
+    var delId = e.target.getAttribute("data-del");
+    if (editId) openModal(state.items.find(function(it){ return it.id === editId; }));
+    if (delId){
+      if (confirm("Supprimer cet article ?")){
+        state.items = state.items.filter(function(it){ return it.id !== delId; });
+        saveItems();
+        renderAll();
+      }
+    }
+  });
+
+  /* =========================================================
+     5. MODAL AJOUT / MODIFICATION
+  ========================================================= */
+  var modal = document.getElementById("item-modal");
+  var form = document.getElementById("item-form");
+  var photoDataUrl = null;
+
+  function openModal(item){
+    document.getElementById("modal-title").textContent = item ? "Modifier l'article" : "Ajouter un article";
+    document.getElementById("f-id").value = item ? item.id : "";
+    document.getElementById("f-name").value = item ? item.name : "";
+    document.getElementById("f-category").value = item ? (item.category||"") : "";
+    document.getElementById("f-qty").value = item ? item.qty : "";
+    document.getElementById("f-unit").value = item ? (item.unit||"") : "";
+    document.getElementById("f-price").value = item ? (item.price||"") : "";
+    document.getElementById("f-lowstock").value = item ? (item.lowStock!=null ? item.lowStock : 5) : 5;
+    document.getElementById("f-notes").value = item ? (item.notes||"") : "";
+    photoDataUrl = item ? (item.photo||null) : null;
+    var preview = document.getElementById("f-photo-preview");
+    if (photoDataUrl){ preview.src = photoDataUrl; preview.style.display = "block"; }
+    else { preview.style.display = "none"; }
+    document.getElementById("f-photo").value = "";
+    modal.classList.add("is-open");
+  }
+  function closeModal(){ modal.classList.remove("is-open"); }
+
+  document.getElementById("btn-add-item").addEventListener("click", function(){
+    if (!canAddMore()){
+      alert("Limite de "+FREE_ITEM_LIMIT+" articles atteinte en version gratuite. Passez en illimité pour continuer.");
+      document.getElementById("pricing-section").scrollIntoView({behavior:"smooth"});
+      return;
+    }
+    openModal(null);
+  });
+  document.getElementById("modal-cancel").addEventListener("click", closeModal);
+  modal.addEventListener("click", function(e){ if (e.target === modal) closeModal(); });
+
+  function resizeImage(file, maxDim){
+    maxDim = maxDim || 480;
+    return new Promise(function(resolve, reject){
+      var reader = new FileReader();
+      reader.onload = function(e){
+        var img = new Image();
+        img.onload = function(){
+          var w = img.width, h = img.height;
+          if (w > h){ if (w > maxDim){ h = h*maxDim/w; w = maxDim; } }
+          else { if (h > maxDim){ w = w*maxDim/h; h = maxDim; } }
+          var canvas = document.createElement("canvas");
+          canvas.width = w; canvas.height = h;
+          canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL("image/jpeg", 0.7));
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  document.getElementById("f-photo").addEventListener("change", function(e){
+    var file = e.target.files[0];
+    if (!file) return;
+    resizeImage(file).then(function(dataUrl){
+      photoDataUrl = dataUrl;
+      var preview = document.getElementById("f-photo-preview");
+      preview.src = dataUrl;
+      preview.style.display = "block";
+    });
+  });
+
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    var id = document.getElementById("f-id").value;
+    var data = {
+      id: id || uid(),
+      name: document.getElementById("f-name").value.trim(),
+      category: document.getElementById("f-category").value.trim(),
+      qty: document.getElementById("f-qty").value,
+      unit: document.getElementById("f-unit").value.trim(),
+      price: document.getElementById("f-price").value,
+      lowStock: document.getElementById("f-lowstock").value,
+      notes: document.getElementById("f-notes").value.trim(),
+      photo: photoDataUrl,
+      updatedAt: Date.now()
+    };
+    if (!data.name || data.qty === ""){ alert("Le nom et la quantité sont obligatoires."); return; }
+
+    if (id){
+      state.items = state.items.map(function(it){ return it.id === id ? Object.assign({}, it, data) : it; });
+    } else {
+      if (!canAddMore()){
+        alert("Limite de "+FREE_ITEM_LIMIT+" articles atteinte en version gratuite.");
+        return;
+      }
+      data.createdAt = Date.now();
+      state.items.push(data);
+    }
+    saveItems();
+    closeModal();
+    renderAll();
+  });
+
+  /* =========================================================
+     6. EXPORT / IMPORT (sauvegarde locale, sans cloud)
+  ========================================================= */
+  document.getElementById("btn-export").addEventListener("click", function(){
+    var payload = {items: state.items, subscription: state.subscription, exportedAt: new Date().toISOString()};
+    var blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "donko-inventory-sauvegarde-"+new Date().toISOString().slice(0,10)+".json";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById("import-input").addEventListener("change", function(e){
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev){
+      try {
+        var data = JSON.parse(ev.target.result);
+        if (!Array.isArray(data.items)) throw new Error("format");
+        if (!confirm("Importer cette sauvegarde va remplacer vos données actuelles. Continuer ?")) return;
+        state.items = data.items;
+        if (data.subscription) state.subscription = data.subscription;
+        saveItems(); saveSub();
+        renderAll(); renderSubscriptionUI();
+        alert("Sauvegarde importée avec succès.");
+      } catch(err){
+        alert("Fichier de sauvegarde invalide.");
+      }
+    };
+    reader.readAsText(file);
+  });
+
+  /* =========================================================
+     7. PAIEMENT FEDAPAY + GÉNÉRATION DE LICENCE
+  ========================================================= */
+  function getCustomerInfo(){
+    return {
+      firstname: document.getElementById("c-firstname").value.trim() || "Client",
+      lastname: document.getElementById("c-lastname").value.trim() || "DONKO",
+      email: document.getElementById("c-email").value.trim(),
+      phone: document.getElementById("c-phone").value.trim(),
+      country: document.getElementById("c-country").value
+    };
+  }
+
+  function showPaymentMsg(html, type){
+    var el = document.getElementById("payment-msg");
+    el.style.color = type === "error" ? "var(--danger)" : (type === "success" ? "var(--millet)" : "#5c5645");
+    el.innerHTML = html;
+  }
+
+  function whatsappFallbackHtml(planLabel, amount){
+    var text = encodeURIComponent("Bonjour, je souhaite payer l'abonnement " + planLabel + " (" + amount + " FCFA) pour DONKO Inventory mais le paiement en ligne ne s'est pas ouvert.");
+    return "Le paiement en ligne n'a pas pu s'ouvrir. <a href='https://wa.me/2290196809106?text=" + text + "' target='_blank' rel='noopener'>Contactez-nous sur WhatsApp</a> pour finaliser autrement.";
+  }
+
+  document.querySelectorAll(".plan-btn").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var planDays = parseInt(btn.getAttribute("data-plan"), 10);
+      var amount = parseInt(btn.getAttribute("data-amount"), 10);
+      var customer = getCustomerInfo();
+
+      showPaymentMsg("", "info");
+
+      if (!customer.email || !customer.phone){
+        showPaymentMsg("Merci de renseigner au moins votre téléphone et votre email ci-dessus avant de payer.", "error");
+        return;
+      }
+      if (typeof FedaPay === "undefined" || typeof FedaPay.init !== "function"){
+        showPaymentMsg("Le module de paiement n'a pas pu se charger (connexion internet requise). " + whatsappFallbackHtml(PLAN_LABELS[planDays], amount), "error");
+        return;
+      }
+
+      try {
+        var widget = FedaPay.init({
+          public_key: FEDAPAY_PUBLIC_KEY,
+          transaction: {
+            amount: amount,
+            description: "DONKO Inventory - Abonnement " + PLAN_LABELS[planDays]
+          },
+          customer: {
+            email: customer.email,
+            firstname: customer.firstname,
+            lastname: customer.lastname,
+            phone_number: { number: customer.phone, country: customer.country }
+          },
+          currency: { iso: "XOF" },
+          onComplete: function(resp){
+            if (resp && resp.transaction && resp.transaction.status === "approved"){
+              generateLicenseKey(planDays).then(function(result){
+                activateSubscription(result.plan, result.expiresAt, result.key);
+                showPaymentMsg(
+                  "Paiement confirmé ! Formule illimitée active jusqu'au " + new Date(result.expiresAt).toLocaleDateString("fr-FR") + ".<br>" +
+                  "Votre clé de licence (conservez-la) :<br>" +
+                  "<code style='display:inline-block;margin-top:6px;padding:6px 10px;background:#fff6e4;border:1px solid var(--gold);border-radius:6px;font-weight:700;'>" + result.key + "</code> " +
+                  "<button type='button' class='btn btn-ghost btn-sm' id='btn-copy-key' style='margin-left:6px;'>Copier</button>",
+                  "success"
+                );
+                var copyBtn = document.getElementById("btn-copy-key");
+                if (copyBtn){
+                  copyBtn.addEventListener("click", function(){
+                    if (navigator.clipboard && navigator.clipboard.writeText){
+                      navigator.clipboard.writeText(result.key);
+                    }
+                    copyBtn.textContent = "Copié !";
+                  });
+                }
+              });
+            } else {
+              showPaymentMsg("Paiement non finalisé. Vous pouvez réessayer à tout moment.", "error");
+            }
+          }
+        });
+        if (!widget || typeof widget.open !== "function"){
+          showPaymentMsg("Le module de paiement n'a pas répondu correctement. " + whatsappFallbackHtml(PLAN_LABELS[planDays], amount), "error");
+          return;
+        }
+        widget.open();
+      } catch (err){
+        showPaymentMsg("Une erreur a empêché l'ouverture du paiement (" + (err && err.message ? err.message : "erreur inconnue") + "). " + whatsappFallbackHtml(PLAN_LABELS[planDays], amount), "error");
+      }
+    });
+  });
+
+  /* Activation manuelle par clé (reçue via WhatsApp/email en cas de souci) */
+  document.getElementById("btn-activate-license").addEventListener("click", function(){
+    var input = document.getElementById("license-input").value;
+    var msg = document.getElementById("license-msg");
+    validateLicenseKey(input).then(function(res){
+      if (res.valid){
+        activateSubscription(res.plan, res.expiresAt, input.trim().toUpperCase());
+        msg.style.color = "var(--millet)";
+        msg.textContent = "Clé activée ! Formule illimitée jusqu'au " + new Date(res.expiresAt).toLocaleDateString("fr-FR") + ".";
+      } else if (res.reason === "expired"){
+        msg.style.color = "var(--danger)";
+        msg.textContent = "Cette clé a expiré le " + new Date(res.expiresAt).toLocaleDateString("fr-FR") + ".";
+      } else {
+        msg.style.color = "var(--danger)";
+        msg.textContent = "Clé invalide. Vérifiez qu'elle est copiée sans espace.";
+      }
+    });
+  });
+
+  /* =========================================================
+     8. FRICTION ANTI-COPIE (dissuasion, pas une vraie sécurité)
+  ========================================================= */
+  document.addEventListener("contextmenu", function(e){ e.preventDefault(); });
+  document.addEventListener("keydown", function(e){
+    var k = e.key ? e.key.toLowerCase() : "";
+    if (k === "f12") e.preventDefault();
+    if (e.ctrlKey && e.shiftKey && (k === "i" || k === "j" || k === "c")) e.preventDefault();
+    if (e.ctrlKey && k === "u") e.preventDefault();
+  });
+
+  /* =========================================================
+     9. Hors-ligne : toutes les données (articles, abonnement) vivent
+     dans localStorage, donc l'app fonctionne sans connexion dès que
+     cette page a été chargée une première fois. Un seul fichier,
+     aucun serveur, aucune base de données externe.
+  ========================================================= */
+
+  /* =========================================================
+     10. DÉMARRAGE
+  ========================================================= */
+  document.getElementById("free-limit-label").textContent = FREE_ITEM_LIMIT;
+  document.getElementById("free-limit-label-2").textContent = FREE_ITEM_LIMIT;
+  renderAll();
+  renderSubscriptionUI();
+})();
+</script>
+</body>
+</html>
